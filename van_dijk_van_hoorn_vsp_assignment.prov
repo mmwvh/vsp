@@ -30,19 +30,19 @@ let initiatorC = new nc;
 (* Request Alice *)
   out ( net, enc(( A, nc, request_m), pk( sk( A))));
   (* Unpack hash of secret of Alice *)
-  in ( net, x);
-    let ( sa, na) = verify( y , pk( sk( A))) in
-      let ( =A, y) = dec( x, sk( C)) in
+  in ( net, x);                                       (* C receives x from A *)
+    let ( =A, y) = dec( x, sk( C)) in                 (* decrypts x *)
+      let ( sa, na) = verify( y , pk( sk( A))) in     (* checks signature *)
         event end( A, C, nc);
 (* Request Bob *)
   out ( net, enc(( B, nc, request_m), pk( sk( B))));
   (* Unpack hash of secret of Bob *)
-  in ( net, x);
-    let ( sb, nb) = verify( y , pk( sk( B))) in
-      let ( =B, y) = dec( x, sk( C)) in
+  in ( net, x);                                       (* C reveives x from B *)
+    let ( =B, y) = dec( x, sk( C)) in                 (* decrypts x *)
+      let ( sb, nb) = verify( y , pk( sk( B))) in     (* checks signature *)
         event end( B, C, nc);
 (* Compare hashes of secrets *)
-  let ok = eq( sa, sb);
+  (*let ok = eq( sa, sb);                               (* checks sa == sb *)
   out ( net, (success_m, na));
   out ( net, (success_m, nb));
   out ( net, flagC).
