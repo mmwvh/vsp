@@ -29,36 +29,43 @@ query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement*)
 let initiatorC = new nc;
 (* Request Alice *)
   out ( net, enc(( A, nc, request_m), pk( sk( A))));
+  (* Unpack hash of secret of Alice *)
   in ( net, x);
     let ( sa, na) = verify( y , pk( sk( A))) in
       let ( =A, y) = dec( x, sk( C)) in
         event end( A, C, nc);
 (* Request Bob *)
   out ( net, enc(( B, nc, request_m), pk( sk( B))));
+  (* Unpack hash of secret of Bob *)
   in ( net, x);
     let ( sb, nb) = verify( y , pk( sk( B))) in
       let ( =B, y) = dec( x, sk( C)) in
         event end( B, C, nc);
-(* Compare secrets *)
+(* Compare hashes of secrets *)
   let ok = eq( sa, sb);
-  out ( net, enc( (success_m, na), pk( sk( A))));
-  out ( net, enc( (success_m, nb), pk( sk( B)))).
+  out ( net, (success_m, na));
+  out ( net, (success_m, nb));
+  out ( net, flagC).
 
 let responderA = in( net, x);
   let ( =A, nc, =request_m) = x in
     event begin( A, C, nc);
+  (* Send hashed secret *)
   new na;
   out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
   in ( net, y);
-    let ( =success_m, =na) in dec( y, sk( A)).
+    let ( =success_m, =na) in y;
+  out ( net, flagA).
 
-let responderB = ;
+let responderB = in( net, x);
   let ( =B, nc, =request_m) = x in
     event begin( B, C, nc);
+  (* Send hashed secret *)
   new nb;
   out ( net, enc( ( B, sign( (h( s), nb), sk( B))), pk( sk( C))));
   in ( net, y);
-    let ( =success_m, =nb) in dec( y, sk( B)).
+    let ( =success_m, =nb) in y;
+  out ( net, flagB).
 
 process
   (!responderA | !responderB | !initiatorC)
