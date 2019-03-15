@@ -2,43 +2,63 @@
 
 free net. (* public network/channel *)
 free A, B, C. (* identifiers * )
-free m1, m2. (* publicly known message *)
+free request_m, success_m. (* publicly known messages *)
 private free s. (* secret *)
 
 (* Section defining the functions used. *)
 fun pk/1.
-fun hash/1.
+fun h/1.
 fun enc/2.
 fun sign/2.
 private fun sk/1.
-reduc dec(enc(x,pk(y)),y) = x.
-reduc verify(sign(x,y),pk(y)) = x.
+reduc dec( enc( x, pk(y)), y) = x.
+reduc verify( sign( x, y),pk( y)) = x.
+reduc eq(x,x) = x.
 
 (* Queries: what do we want proverif to check *)
-query attacker s;
-query evinj:end(x,y,z) ==> evinj:begin(x,y,z). (* Injective Agreement*)
+query attacker: s.
+query attacker: flagA, flagB, flagC.
+
+(* Authentication *)
+query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement*)
 
 
-(* Protocol ----------------------------------------------------------*)
+(* Protocol ------------------------------------------------------------------*)
+
+(* Charlie requests Alice and Bob to prove that they know the same secret s *)
 let initiatorC = new nc;
-  out(net, enc((A, nc, m1), pk(sk(A))));
-  in(net, sa);
-  let (hash(s)) = sa in
-    let (( =A, sa)) = x in
-      let (na, =nc) = verify(,pka) in
-        event end(A, C, nc).
+(* Request Alice *)
+  out ( net, enc(( A, nc, request_m), pk( sk( A))));
+  in ( net, x);
+    let ( sa, na) = verify( y , pk( sk( A))) in
+      let ( =A, y) = dec( x, sk( C)) in
+        event end( A, C, nc);
+(* Request Bob *)
+  out ( net, enc(( B, nc, request_m), pk( sk( B))));
+  in ( net, x);
+    let ( sb, nb) = verify( y , pk( sk( B))) in
+      let ( =B, y) = dec( x, sk( C)) in
+        event end( B, C, nc);
+(* Compare secrets *)
+  let ok = eq( sa, sb);
+  out ( net, enc( (success_m, na), pk( sk( A))));
+  out ( net, enc( (success_m, nb), pk( sk( B)))).
 
-let responderA = in(net, x);
-  let (=A, nc, =m1) = x in
-    event begin(A, C, nc);
+let responderA = in( net, x);
+  let ( =A, nc, =request_m) = x in
+    event begin( A, C, nc);
   new na;
-  out(net, enc((A, na, sign(s,sk(A))), pk(sk(C))));
-  in(net, y);
-    let (=A, =na, m2) = y in
-      ...
+  out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
+  in ( net, y);
+    let ( =success_m, =na) in dec( y, sk( A)).
 
 let responderB = ;
-  event end(B, C, m);
+  let ( =B, nc, =request_m) = x in
+    event begin( B, C, nc);
+  new nb;
+  out ( net, enc( ( B, sign( (h( s), nb), sk( B))), pk( sk( C))));
+  in ( net, y);
+    let ( =success_m, =nb) in dec( y, sk( B)).
 
 process
   (!responderA | !responderB | !initiatorC)
