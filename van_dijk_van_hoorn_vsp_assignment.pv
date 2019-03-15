@@ -1,0 +1,44 @@
+(* Authors: Martijn van Dijk & Wesley van Hoorn *)
+
+free net. (* public network/channel *)
+free A, B, C. (* identifiers * )
+free m1, m2. (* publicly known message *)
+private free s. (* secret *)
+
+(* Section defining the functions used. *)
+fun pk/1.
+fun hash/1.
+fun enc/2.
+fun sign/2.
+private fun sk/1.
+reduc dec(enc(x,pk(y)),y) = x.
+reduc verify(sign(x,y),pk(y)) = x.
+
+(* Queries: what do we want proverif to check *)
+query attacker s;
+query evinj:end(x,y,z) ==> evinj:begin(x,y,z). (* Injective Agreement*)
+
+
+(* Protocol ----------------------------------------------------------*)
+let initiatorC = new nc;
+  out(net, enc((A, nc, m1), pk(sk(A))));
+  in(net, sa);
+  let (hash(s)) = sa in
+    let (( =A, sa)) = x in
+      let (na, =nc) = verify(,pka) in
+        event end(A, C, nc).
+
+let responderA = in(net, x);
+  let (=A, nc, =m1) = x in
+    event begin(A, C, nc);
+  new na;
+  out(net, enc((A, na, sign(s,sk(A))), pk(sk(C))));
+  in(net, y);
+    let (=A, =na, m2) = y in
+      ...
+
+let responderB = ;
+  event end(B, C, m);
+
+process
+  (!responderA | !responderB | !initiatorC)
