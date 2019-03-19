@@ -44,8 +44,8 @@ let initiatorC = new nc;
         event end( B, C, nc);
 (* Compare hashes of secrets *)
   (*let ok = eq( sa, sb);                               (* checks sa == sb *)
-  out ( net, (success_m, na));
-  out ( net, (success_m, nb));
+  (*out ( net, enc(( success_m, na), pk( sk( A))));
+  out ( net, enc(( success_m, nb), pk( sk( B))));*)
   out ( net, flagC).
 
 let responderA = in( net, x);
@@ -54,7 +54,8 @@ let responderA = in( net, x);
   (* Send hashed secret *)
   new na;
   out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
-  in ( net, ( =success_m, =na));
+  (*in ( net, y);
+  let ( =success_m, =na) = dec(y, sk( A));*)
   out ( net, flagA).
 
 let responderB = in( net, x);
@@ -63,7 +64,7 @@ let responderB = in( net, x);
   (* Send hashed secret *)
   new nb;
   out ( net, enc( ( B, sign( (h( s), nb), sk( B))), pk( sk( C))));
-  in ( net, ( =success_m, =nb));
+  (*in ( net, ( =success_m, =nb));*)
   out ( net, flagB).
 
 process
