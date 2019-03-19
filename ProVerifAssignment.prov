@@ -1,6 +1,7 @@
 free net. (* public network/channel *)
 free A, B, C, compA, compC. (* identifiers * )
 free request_m, success_m. (* publicly known messages *)
+private free flagA, flagB, flagC.
 private free s. (* secret *)
 
 (* Section defining the functions used. *)
@@ -51,8 +52,7 @@ let responderA = in( net, x);
   (* Send hashed secret *)
   new na;
   out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
-  in ( net, y);
-    let ( =success_m, =na) in y;
+  in ( net, ( =success_m, =na));
   out ( net, flagA).
 
 let responderB = in( net, x);
@@ -61,8 +61,7 @@ let responderB = in( net, x);
   (* Send hashed secret *)
   new nb;
   out ( net, enc( ( B, sign( (h( s), nb), sk( B))), pk( sk( C))));
-  in ( net, y);
-    let ( =success_m, =nb) in y;
+  in ( net, ( =success_m, =nb));
   out ( net, flagB).
 
 process
