@@ -1,17 +1,17 @@
-free net. (* public network/channel *)
-free A, B, C, compA, compC. (* identifiers *)
-free request_m, success_m, failed_m. (* public messages *)
-private free flagA, flagB, flagC.
-private free s. (* secret *)
+free net.                                             (* public network/channel *)
+free A, B, C, compA, compC.                           (* identifiers *)
+free request_m, success_m, failed_m.                  (* public messages *)
+private free flagA, flagB, flagC.                     (* Flags *)
+private free s.                                       (* secret *)
 
 (* Section defining the functions used. *)
-fun pk/1.
-fun h/1.
-fun enc/2.
-fun sign/2.
-private fun sk/1.
-reduc dec( enc( x, pk(y)), y) = x.
-reduc verify( sign( x, y),pk( y)) = x.
+fun pk/1.                                             (* Public key *)
+fun h/1.                                              (* Hash function *)
+fun enc/2.                                            (* Public key encryption *)
+fun sign/2.                                           (* Digital signing *)
+private fun sk/1.                                     (* Secret key *)
+reduc dec( enc( x, pk(y)), y) = x.                    (* Encryption to Decryption reduc *)
+reduc verify( sign( x, y),pk( y)) = x.                (* Verify 'unsign' the signature *)
 
 (* Queries: what do we want proverif to check *)
 query attacker: s.
@@ -20,11 +20,12 @@ query attacker: flagB.
 query attacker: flagC.
 
 (* Authentication *)
-query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement*)
+query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement *)
 
 
 (* Protocol ------------------------------------------------------------------*)
 
+(* Initiator process *)
 (* Charlie requests Alice and Bob to prove that they know the same secret s *)
 let initiatorC = new nc;
 (* Request Alice *)
@@ -33,7 +34,8 @@ let initiatorC = new nc;
   in ( net, x);                                       (* C receives x from A *)
     let ( =A, y) = dec( x, sk( C)) in                 (* decrypts x *)
       let ( sa, na) = verify( y , pk( sk( A))) in     (* checks signature *)
-        event end( A, C, nc);
+        if A<>compA then
+          event end( A, C, nc);
 (* Request Bob *)
   out ( net, enc(( B, nc, request_m), pk( sk( B))));
   (* Unpack hash of secret of Bob *)
@@ -43,23 +45,27 @@ let initiatorC = new nc;
         event end( B, C, nc);
 (* Compare hashes of secrets *)
   if sa = sb then                                     (* checks sa equals sb *)
+    (
     out ( net, ( success_m, na));
-    out ( net, ( success_m, nb));
+    out ( net, ( success_m, nb))
+    )
   else
     out ( net, ( failed_m, na));
     out ( net, ( failed_m, nb));
 
   out ( net, flagC).
 
+(* ResponderA process *)
 let responderA = in( net, x);
   let ( =A, nc, =request_m) = dec(x, sk( A)) in
     event begin( A, C, nc);
   (* Send hashed secret *)
   new na;
   out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
-  in ( net, ( m, =na);
+  in ( net, ( m, =na));
   out ( net, flagA).
 
+(* ResponderB process *)
 let responderB = in( net, x);
   let ( =B, nc, =request_m) = dec(x, sk( B)) in
     event begin( B, C, nc);
