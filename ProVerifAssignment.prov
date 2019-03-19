@@ -1,6 +1,6 @@
 free net. (* public network/channel *)
-free A, B, C, compA, compC. (* identifiers * )
-free request_m, success_m. (* publicly known messages *)
+free A, B, C, compA, compC. (* identifiers *)
+free request_m, success_m. (* public messages *)
 private free flagA, flagB, flagC.
 private free s. (* secret *)
 
@@ -16,7 +16,9 @@ reduc eq(x,x) = x.
 
 (* Queries: what do we want proverif to check *)
 query attacker: s.
-query attacker: flagA, flagB, flagC.
+query attacker: flagA.
+query attacker: flagB.
+query attacker: flagC.
 
 (* Authentication *)
 query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement*)
@@ -47,7 +49,7 @@ let initiatorC = new nc;
   out ( net, flagC).
 
 let responderA = in( net, x);
-  let ( =A, nc, =request_m) = x in
+  let ( =A, nc, =request_m) = dec(x, sk( A)) in
     event begin( A, C, nc);
   (* Send hashed secret *)
   new na;
@@ -56,7 +58,7 @@ let responderA = in( net, x);
   out ( net, flagA).
 
 let responderB = in( net, x);
-  let ( =B, nc, =request_m) = x in
+  let ( =B, nc, =request_m) = dec(x, sk( B)) in
     event begin( B, C, nc);
   (* Send hashed secret *)
   new nb;
