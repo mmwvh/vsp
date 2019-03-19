@@ -1,5 +1,3 @@
-(* Authors: Martijn van Dijk & Wesley van Hoorn *)
-
 free net. (* public network/channel *)
 free A, B, C, compA, compC. (* identifiers * )
 free request_m, success_m. (* publicly known messages *)
