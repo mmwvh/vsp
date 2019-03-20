@@ -1,7 +1,7 @@
 free net.                                             (* public network/channel *)
 free A, B, C, compA, compC.                           (* identifiers *)
 free request_m, success_m, failed_m.                  (* public messages *)
-private free flagA, flagB, flagC.                     (* Flags *)
+private free flagA, flagB, flagC1, flagC2.            (* Flags *)
 private free s.                                       (* secret *)
 
 (* Section defining the functions used. *)
@@ -17,7 +17,8 @@ reduc verify( sign( x, y),pk( y)) = x.                (* Verify 'unsign' the sig
 query attacker: s.
 query attacker: flagA.
 query attacker: flagB.
-query attacker: flagC.
+query attacker: flagC1.
+query attacker: flagC2.
 
 (* Authentication *)
 query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement *)
@@ -48,13 +49,13 @@ let initiatorC = new nc;
     (
     out ( net, ( success_m, na));
     out ( net, ( success_m, nb));
-    out ( net, flagC)
+    out ( net, flagC1)                                (* C1 to check the true statement *)
     )
   else
     (
     out ( net, ( failed_m, na));
     out ( net, ( failed_m, nb));
-    out ( net, flagC)
+    out ( net, flagC2)                                (* C2 to check the false statement*)
     ).
 
 (* ResponderA process *)
