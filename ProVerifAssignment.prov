@@ -21,7 +21,8 @@ query attacker: flagC1.
 query attacker: flagC2.
 
 (* Authentication *)
-query evinj:end( x, y, z) ==> evinj:begin( x, y, z).  (* Injective Agreement *)
+query evinj:endA( x, y, z) ==> evinj:beginA( x, y, z).  (* Injective Agreement *)
+query evinj:endB( x, y, z) ==> evinj:beginB( x, y, z).  (* Injective Agreement *)
 
 
 (* Protocol ------------------------------------------------------------------*)
@@ -33,17 +34,17 @@ let initiatorC = new nc;
   out ( net, enc(( A, nc, request_m), pk( sk( A))));
   (* Unpack hash of secret of Alice *)
   in ( net, x);                                       (* C receives x from A *)
-    let ( =A, y) = dec( x, sk( C)) in                 (* decrypts x *)
-      let ( sa, na) = verify( y , pk( sk( A))) in     (* checks signature *)
+    let ( =A, =nc, y) = dec( x, sk( C)) in            (* decrypts x to check identity and session *)
+      let ( sa, na) = verify( y , pk( sk( A))) in     (* checks signature to find hashed s*)
         if A<>compA then
-          event end( A, C, nc);
+          event endA( A, C, nc);
 (* Request Bob *)
   out ( net, enc(( B, nc, request_m), pk( sk( B))));
   (* Unpack hash of secret of Bob *)
   in ( net, x);                                       (* C reveives x from B *)
-    let ( =B, y) = dec( x, sk( C)) in                 (* decrypts x *)
-      let ( sb, nb) = verify( y , pk( sk( B))) in     (* checks signature *)
-        event end( B, C, nc);
+    let ( =B, =nc, y) = dec( x, sk( C)) in            (* decrypts x to check identity and session *)
+      let ( sb, nb) = verify( y , pk( sk( B))) in     (* checks signature to find hashed s*)
+        event endB( B, C, nc);
 (* Compare hashes of secrets *)
   if sa = sb then                                     (* checks sa equals sb *)
     (
@@ -55,26 +56,26 @@ let initiatorC = new nc;
     (
     out ( net, ( failed_m, na));
     out ( net, ( failed_m, nb));
-    out ( net, flagC2)                                (* C2 to check the false statement*)
+    out ( net, flagC2)                                (* C2 to check the false statement *)
     ).
 
 (* ResponderA process *)
 let responderA = in( net, x);
   let ( =A, nc, =request_m) = dec(x, sk( A)) in
-    event begin( A, C, nc);
+    event beginA( A, C, nc);
   (* Send hashed secret *)
   new na;
-  out ( net, enc( ( A, sign( (h( s), na), sk( A))), pk( sk( C))));
+  out ( net, enc( ( A, nc, sign( (h( s), na), sk( A))), pk( sk( C))));
   in ( net, ( m, =na));
   out ( net, flagA).
 
 (* ResponderB process *)
 let responderB = in( net, x);
   let ( =B, nc, =request_m) = dec(x, sk( B)) in
-    event begin( B, C, nc);
+    event beginB( B, C, nc);
   (* Send hashed secret *)
   new nb;
-  out ( net, enc( ( B, sign( (h( s), nb), sk( B))), pk( sk( C))));
+  out ( net, enc( ( B, nc, sign( (h( s), nb), sk( B))), pk( sk( C))));
   in ( net, ( m, =nb));
   out ( net, flagB).
 
