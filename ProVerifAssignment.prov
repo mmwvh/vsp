@@ -21,8 +21,8 @@ query attacker: flagC1.
 query attacker: flagC2.
 
 (* Authentication *)
-query evinj:endA( x, y, z) ==> evinj:beginA( x, y, z).  (* Injective Agreement *)
-query evinj:endB( x, y, z) ==> evinj:beginB( x, y, z).  (* Injective Agreement *)
+query evinj:endA( x, y, z) ==> evinj:beginA( x, y, z).  (* Injective Agreement A *)
+query evinj:endB( x, y, z) ==> evinj:beginB( x, y, z).  (* Injective Agreement B *)
 
 
 (* Protocol ------------------------------------------------------------------*)
@@ -36,7 +36,7 @@ let initiatorC = new nc;
   in ( net, x);                                       (* C receives x from A *)
     let ( =A, =nc, y) = dec( x, sk( C)) in            (* decrypts x to check identity and session *)
       let ( sa, na) = verify( y , pk( sk( A))) in     (* checks signature to find hashed s*)
-        if A<>compA then
+        if A<>compA then                              (* compromised B not necessary to check because of the symmetry*)
           event endA( A, C, nc);
 (* Request Bob *)
   out ( net, enc(( B, nc, request_m), pk( sk( B))));
@@ -82,14 +82,23 @@ let responderB = in( net, x);
 (* Compromised Agent A *)
 let compromisedA =
   let pubkey = pk(compA) in
-    let sekkey = sk(compA) in
-      out(net, (pubkey,sekkey)).
+    let seckey = sk(compA) in
+      out( net, ( pubkey, seckey)).                      (* compromises keys *)
 
 (* Compromised Agent C *)
 let compromisedC =
-  let pubkey = pk(compC) in
-    let sekkey = sk(compC) in
-      out(net, (pubkey,sekkey)).
+  let pubkey = pk( compC) in
+    let seckey = sk( compC) in
+      out(net, (pubkey, seckey));                      (* compromises keys *)
+  in ( net, x);
+    let ( =A, nc, y) = dec( x, sk( C)) in
+      let ( sa, na) = verify( y , pk( sk( A))) in
+        out(net, ( sa, na));                           (* compromises sa, na *)
+    in ( net, x);
+      let ( =B, =nc, y) = dec( x, sk( C)) in
+        let ( sb, nb) = verify( y , pk( sk( B))) in
+          out( net, ( sb, nb)).                         (* compromises sb, nb *)
 
+(* Process -------------------------------------------------------------------*)
 process
   (!responderA | !responderB | !initiatorC | !compromisedA | !compromisedC)
