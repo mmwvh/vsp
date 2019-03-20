@@ -75,5 +75,17 @@ let responderB = in( net, x);
   in ( net, ( m, =nb));
   out ( net, flagB).
 
+(* Compromised Agent A *)
+let compromisedA =
+  let pubkey = pk(compA) in
+    let sekkey = sk(compA) in
+      out(net, (pubkey,sekkey)).
+
+(* Compromised Agent C *)
+let compromisedC =
+  let pubkey = pk(compC) in
+    let sekkey = sk(compC) in
+      out(net, (pubkey,sekkey)).
+
 process
-  (!responderA | !responderB | !initiatorC)
+  (!responderA | !responderB | !initiatorC | !compromisedA | !compromisedC)
