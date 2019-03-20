@@ -47,13 +47,15 @@ let initiatorC = new nc;
   if sa = sb then                                     (* checks sa equals sb *)
     (
     out ( net, ( success_m, na));
-    out ( net, ( success_m, nb))
+    out ( net, ( success_m, nb));
+    out ( net, flagC)
     )
   else
+    (
     out ( net, ( failed_m, na));
     out ( net, ( failed_m, nb));
-
-  out ( net, flagC).
+    out ( net, flagC)
+    ).
 
 (* ResponderA process *)
 let responderA = in( net, x);
