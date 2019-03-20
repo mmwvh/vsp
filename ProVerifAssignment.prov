@@ -48,8 +48,8 @@ let initiatorC = new nc;
 (* Compare hashes of secrets *)
   if sa = sb then                                     (* checks sa equals sb *)
     (
-    out ( net, ( success_m, na));
-    out ( net, ( success_m, nb));
+    out ( net, ( success_m, na));                     (* there is no need in encrypting or signing these messages since these are public *)
+    out ( net, ( success_m, nb));                     (* nonce is used for A and B to check the freshness *)
     out ( net, flagC1)                                (* C1 to check the true statement *)
     )
   else
@@ -64,6 +64,12 @@ let responderA = in( net, x);
   let ( =A, nc, =request_m) = dec(x, sk( A)) in
     event beginA( A, C, nc);
   (* Send hashed secret *)
+  (* hash to hide secret *)
+  (* sign to verify identity *)
+  (* encrypt to hide the communication*)
+  (* nonce nc added for agreement *)
+  (* nonce na added for freshness *)
+  (* identity added for C to know who to verify *)
   new na;
   out ( net, enc( ( A, nc, sign( (h( s), na), sk( A))), pk( sk( C))));
   in ( net, ( m, =na));
@@ -83,21 +89,21 @@ let responderB = in( net, x);
 let compromisedA =
   let pubkey = pk(compA) in
     let seckey = sk(compA) in
-      out( net, ( pubkey, seckey)).                      (* compromises keys *)
+      out( net, ( pubkey, seckey)).                   (* compromises keys *)
 
 (* Compromised Agent C *)
 let compromisedC =
   let pubkey = pk( compC) in
     let seckey = sk( compC) in
-      out(net, (pubkey, seckey));                      (* compromises keys *)
+      out(net, (pubkey, seckey));                     (* compromises keys *)
   in ( net, x);
     let ( =A, nc, y) = dec( x, sk( C)) in
       let ( sa, na) = verify( y , pk( sk( A))) in
-        out(net, ( sa, na));                           (* compromises sa, na *)
+        out(net, ( sa, na));                          (* compromises sa, na *)
     in ( net, x);
-      let ( =B, =nc, y) = dec( x, sk( C)) in
+      let ( =B, nc, y) = dec( x, sk( C)) in
         let ( sb, nb) = verify( y , pk( sk( B))) in
-          out( net, ( sb, nb)).                         (* compromises sb, nb *)
+          out( net, ( sb, nb)).                       (* compromises sb, nb *)
 
 (* Process -------------------------------------------------------------------*)
 process
