@@ -1,3 +1,7 @@
+(* C request A and B to respond *)
+(* A and B both send the secret hashed signed and encrypted to C *)
+(* C verifies that the hashed secrets of A and B are equal *)
+
 free net.                                             (* public network/channel *)
 free A, B, C, compA, compC.                           (* identifiers *)
 free request_m, success_m, failed_m.                  (* public messages *)
